@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# Title: SwapRemover
+# Purpose: To be called by a service on shutdown or reboot
+#	   in order to remove the swap file made by SwapManager.
+if [ -f /swapfile ]
+then
+	# Remove swap file
+	sudo swapoff -a
+	sudo rm -f /swapfile
+	sudo sed -i 's#/swapfile .*$##g' /etc/fstab
+fi

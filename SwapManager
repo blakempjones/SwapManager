@@ -1,0 +1,26 @@
+#!/bin/bash
+#
+# Title: SwapManager
+# Purpose: To monitor RAM usage and automatically generate
+#	   a 512 MB swap file after a set threshold.
+#
+while true; do
+	# Get current RAM statistics
+	totalMem="$(free -m | awk '{if(NR==2) {print $2}}')"
+	usedMem="$(free -m | awk '{if(NR==2) {print $3}}')"
+	ratio=$(echo "$usedMem / $totalMem" | bc -l)
+	# RAM threshold to create a swap file at 
+	maxMem=0.85
+	makeSwap="$(echo $ratio'>='$maxMem | bc -l)"
+	if [ $makeSwap -eq 1 ] && [ ! -f /swapfile ] 
+	then 
+		# Create swap 
+		fallocate -l 512M /swapfile
+		chmod 600 /swapfile
+		mkswap /swapfile
+		swapon /swapfile 
+		echo "/swapfile none swap defaults 0 0" >> /etc/fstab
+		exit
+	fi
+	sleep 1m
+done
